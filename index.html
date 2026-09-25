@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Slim Allouche — Cinematographer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,500&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              bg: "#100D0B",
+              panel: "#1B1712",
+              ink: "#F2ECE1",
+              dim: "#B9AE9C",
+              amber: "#E2A54B",
+              teal: "#3F5C56",
+              line: "rgba(242,236,225,0.12)",
+            },
+            fontFamily: {
+              display: ["Fraunces", "ui-serif", "Georgia", "serif"],
+              sans: ["Inter", "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      :root {
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      html {
+        scroll-padding-top: env(safe-area-inset-top, 0px);
+        scroll-behavior: smooth;
+      }
+      body {
+        background: #100d0b;
+        color: #f2ece1;
+      }
+
+      
+      .grain {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.05;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+
+      .hero-load {
+        opacity: 0;
+        transform: translateY(14px);
+        animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+      }
+      .hero-load.d1 {
+        animation-delay: 0.05s;
+      }
+      .hero-load.d2 {
+        animation-delay: 0.2s;
+      }
+      .hero-load.d3 {
+        animation-delay: 0.35s;
+      }
+      @keyframes rise {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .hero-load {
+          animation: none;
+          opacity: 1;
+          transform: none;
+        }
+        html {
+          scroll-behavior: auto;
+        }
+      }
+
+      .scroll-cue {
+        writing-mode: vertical-rl;
+      }
+
+      .work-card {
+        position: relative;
+        overflow: hidden;
+      }
+      .work-poster img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: grayscale(85%) contrast(1.05) brightness(0.75);
+        transition: filter 0.6s ease,
+          transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+      .work-card:hover .work-poster img,
+      .work-card:focus-visible .work-poster img {
+        filter: grayscale(0%) contrast(1) brightness(0.9);
+        transform: scale(1.04);
+      }
+      .work-meta {
+        transform: translateY(8px);
+        opacity: 0.85;
+        transition: transform 0.45s ease, opacity 0.45s ease;
+      }
+      .work-card:hover .work-meta,
+      .work-card:focus-visible .work-meta {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      a:focus-visible,
+      button:focus-visible {
+        outline: 1px solid #e2a54b;
+        outline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body class="font-sans antialiased">
+    <!-- Floating transparent header -->
+    <header
+      class="fixed top-0 inset-x-0 z-50"
+      style="padding-top: env(safe-area-inset-top, 0px)"
+    >
+      <div
+        class="max-w-[1400px] mx-auto flex items-center justify-between px-6 md:px-10 py-5 md:py-6 bg-gradient-to-b from-bg/70 to-transparent"
+      >
+        <a
+          href="#top"
+          class="font-display italic text-lg md:text-xl tracking-tight text-ink"
+          >Slim Allouche</a
+        >
+        <nav class="hidden md:flex items-center gap-8 text-sm text-dim">
+          <a href="#work" class="hover:text-ink transition-colors">Work</a>
+          <a href="#about" class="hover:text-ink transition-colors">About</a>
+          <a href="#contact" class="hover:text-ink transition-colors"
+            >Contact</a
+          >
+        </nav>
+        <a
+          href="mailto:slimallouche12@gmail.com"
+          class="text-sm text-ink border border-line rounded-full px-4 py-2 hover:border-amber hover:text-amber transition-colors"
+          >Get in touch</a
+        >
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section
+      id="top"
+      class="relative min-h-[100svh] flex flex-col justify-end overflow-hidden bg-bg"
+    >
+      
+      <div
+        class="absolute inset-0"
+        style="
+          background: radial-gradient(
+              120% 90% at 15% 15%,
+              rgba(63, 92, 86, 0.35),
+              transparent 55%
+            ),
+            radial-gradient(
+              90% 70% at 85% 100%,
+              rgba(226, 165, 75, 0.14),
+              transparent 60%
+            ),
+            linear-gradient(180deg, #0d0b09 0%, #100d0b 55%, #0a0908 100%);
+        "
+      ></div>
+      <div class="grain"></div>
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-bg/40"
+      ></div>
+
+      <div
+        class="hidden md:flex scroll-cue absolute right-8 bottom-10 items-center gap-3 text-dim text-xs tracking-wide"
+      >
+        <span class="inline-block w-px h-10 bg-line"></span>
+        <span>Scroll</span>
+      </div>
+
+      <div
+        class="relative max-w-[1400px] w-full mx-auto px-6 md:px-10 pb-16 md:pb-24"
+      >
+        <p class="hero-load d1 text-sm md:text-base text-dim mb-4 md:mb-6">
+          Cinematographer — Director of Photography
+        </p>
+        <h1
+          class="hero-load d2 font-display italic font-medium text-ink text-[13vw] md:text-[6.2vw] leading-[0.95] tracking-tight max-w-4xl"
+        >
+          Light is the story<br />before a word is said.
+        </h1>
+        <div
+          class="hero-load d3 mt-8 md:mt-10 flex flex-col md:flex-row md:items-end justify-between gap-6 border-t border-line pt-6"
+        >
+          <p class="text-dim max-w-md text-[15px] leading-relaxed">
+            Based between Tunis and Paris, shooting music videos, artist films
+            and commercial work for a growing roster of independent artists.
+          </p>
+          <a
+            href="#work"
+            class="text-ink text-sm border-b border-ink/40 hover:border-amber hover:text-amber transition-colors pb-1 w-fit"
+          >
+            Watch the reel
+          </a>
+        </div>
+      </div>
+    </section>
+
+    
+    <section id="work" class="relative bg-bg py-24 md:py-32">
+      <div class="max-w-[1400px] mx-auto px-6 md:px-10">
+        <div
+          class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12 md:mb-16 border-b border-line pb-8"
+        >
+          <h2 class="font-display italic text-4xl md:text-5xl text-ink">
+            Selected works
+          </h2>
+          <p class="text-dim text-sm md:text-base max-w-sm">
+            Music videos and artist films — full cuts on YouTube.
+          </p>
+        </div>
+
+        <div
+          id="works-grid"
+          class="grid grid-cols-1 md:grid-cols-2 gap-px bg-line"
+        ></div>
+      </div>
+    </section>
+
+    
+    <section
+      id="about"
+      class="py-24 md:py-32 px-6 md:px-10 border-t border-line"
+    >
+      <div
+        class="max-w-[1400px] mx-auto grid md:grid-cols-[1fr_1.4fr] gap-10 md:gap-16 items-start"
+      >
+        <h2 class="font-display italic text-4xl md:text-5xl text-ink">About</h2>
+        <p class="text-dim text-base md:text-lg leading-relaxed max-w-xl">
+          Slim Allouche is a director of photography and editor working
+          primarily in music video and artist film. His approach favors natural
+          light, tight crews, and a color palette that leans into contrast
+          rather than flattening it — treating every video as a short film
+          first, a promo second. Recent work includes videos for Ramsjamsss,
+          Cosmooo, Von Moon and LGX. Available for music video, narrative, and
+          commercial bookings.
+        </p>
+      </div>
+    </section>
+
+    
+    <section
+      id="contact"
+      class="py-24 md:py-32 px-6 md:px-10 border-t border-line"
+    >
+      <div class="max-w-[1400px] mx-auto">
+        <h2 class="font-display italic text-4xl md:text-5xl text-ink mb-8">
+          Let's work together
+        </h2>
+        <a
+          href="mailto:slimallouche12@gmail.com"
+          class="block font-display italic text-ink text-[9vw] md:text-[3.2vw] leading-none hover:text-amber transition-colors w-fit mb-12"
+        >
+          slimallouche12@gmail.com
+        </a>
+
+        <div
+          class="grid md:grid-cols-[1fr_1.2fr] gap-12 md:gap-20 border-t border-line pt-12"
+        >
+          <div>
+            <p class="text-dim text-sm leading-relaxed max-w-xs">
+              Prefer a form? Send a message below and it'll land directly in
+              Slim's inbox.
+            </p>
+          </div>
+
+          <form id="contact-form" class="max-w-xl space-y-6" novalidate>
+            <div>
+              <label for="cf-name" class="block text-xs text-dim mb-2"
+                >Name</label
+              >
+              <input
+                required
+                type="text"
+                id="cf-name"
+                name="name"
+                autocomplete="name"
+                class="w-full bg-transparent border-b border-line focus:border-amber outline-none py-2 text-ink placeholder:text-dim/50 transition-colors"
+                placeholder="Your name"
+              />
+            </div>
+            <div>
+              <label for="cf-email" class="block text-xs text-dim mb-2"
+                >Email</label
+              >
+              <input
+                required
+                type="email"
+                id="cf-email"
+                name="email"
+                autocomplete="email"
+                class="w-full bg-transparent border-b border-line focus:border-amber outline-none py-2 text-ink placeholder:text-dim/50 transition-colors"
+                placeholder="you@email.com"
+              />
+            </div>
+            <div>
+              <label for="cf-message" class="block text-xs text-dim mb-2"
+                >Message</label
+              >
+              <textarea
+                required
+                id="cf-message"
+                name="message"
+                rows="4"
+                class="w-full bg-transparent border-b border-line focus:border-amber outline-none py-2 text-ink placeholder:text-dim/50 resize-none transition-colors"
+                placeholder="Tell me about the project, dates and location..."
+              ></textarea>
+            </div>
+            
+            <input
+              type="text"
+              name="_gotcha"
+              class="hidden"
+              tabindex="-1"
+              autocomplete="off"
+            />
+
+            <div class="flex items-center gap-4">
+              <button
+                type="submit"
+                class="text-ink text-sm border border-line rounded-full px-6 py-3 hover:border-amber hover:text-amber transition-colors disabled:opacity-50"
+              >
+                Send message
+              </button>
+              <p
+                id="cf-status"
+                class="text-sm text-dim"
+                role="status"
+                aria-live="polite"
+              ></p>
+            </div>
+          </form>
+        </div>
+
+        <script>
+          (function () {
+            var form = document.getElementById("contact-form");
+            var status = document.getElementById("cf-status");
+            var submitBtn = form.querySelector('button[type="submit"]');
+            form.addEventListener("submit", function (e) {
+              e.preventDefault();
+              if (form._gotcha && form._gotcha.value) return; // honeypot tripped
+              submitBtn.disabled = true;
+              status.textContent = "Sending…";
+
+              /*code mte3 el form */
+
+              fetch("https://formspree.io/f/mljdlypa", {
+                method: "POST",
+                headers: { Accept: "application/json" },
+                body: new FormData(form),
+              })
+                .then(function (res) {
+                  if (res.ok) {
+                    status.textContent =
+                      "Thanks — your message is on its way. Slim will get back to you soon.";
+                    form.reset();
+                  } else {
+                    status.textContent =
+                      "Something went wrong. Email directly at slimallouche12@gmail.com.";
+                  }
+                })
+                .catch(function () {
+                  status.textContent =
+                    "Something went wrong. Email directly at slimallouche12@gmail.com.";
+                })
+                .finally(function () {
+                  submitBtn.disabled = false;
+                });
+            });
+          })();
+        </script>
+
+        <div
+          class="flex flex-col md:flex-row md:items-center justify-between gap-8 border-t border-line pt-8 mt-16"
+        >
+          <a
+            href="tel:+21629470713"
+            class="text-dim hover:text-ink transition-colors text-sm"
+          >
+            +216 29 470 713
+          </a>
+          <div class="flex items-center gap-6 text-sm">
+            <a
+              href="https://instagram.com/slimallouche_"
+              target="_blank"
+              rel="noopener"
+              class="text-dim hover:text-amber transition-colors"
+              >Instagram</a
+            >
+            <a
+              href="https://facebook.com/slimallouche"
+              target="_blank"
+              rel="noopener"
+              class="text-dim hover:text-amber transition-colors"
+              >Facebook</a
+            >
+          </div>
+          <p class="text-dim text-xs">
+            © 2026 Slim Allouche. All rights reserved.
+            <br>
+            Made with Love By Moayed Ghanmi
+          </p>
+        </div>
+      </div>
+    </section>
+    <script>
+      
+
+
+      const PROJECTS_KEY = "slim_projects";
+
+      const DEFAULT_PROJECTS = [
+        {
+          title: "Ramsjamsss — COUCH (w/ Von Moon)",
+          category: "Music Video",
+          videoId: "SENZBz9aIIw",
+        },
+        {
+          title: "Cosmooo x Ramsjamsss — Pull Up",
+          category: "Music Video",
+          videoId: "VeY0PRd_yjw",
+        },
+        {
+          title: "Ramsjamsss — Dont Care",
+          category: "Music Video",
+          videoId: "yzBXleyhFPo",
+        },
+        {
+          title: "Ramsjamsss — idowhatiwant",
+          category: "Music Video",
+          videoId: "2J6N1qr7fSU",
+        },
+        {
+          title: "Ramsjamsss — Twinkie (w/ LGX.)",
+          category: "Music Video",
+          videoId: "-jiQ6s9_Q1U",
+        },
+        {
+          title: "Ramsjamsss — Do Not Disturb",
+          category: "Music Video",
+          videoId: "x7XsUbkCNKs",
+        },
+        {
+          title: "Ramsjamsss — REDEFINED",
+          category: "Music Video",
+          videoId: "15d37MkvAdU",
+        },
+      ];
+
+      function loadProjects() {
+        try {
+          const raw = localStorage.getItem(PROJECTS_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length) return parsed;
+          }
+        } catch (e) {}
+        return DEFAULT_PROJECTS;
+      }
+
+      function escapeHtml(str) {
+        return String(str).replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            }[c])
+        );
+      }
+
+      function renderGrid() {
+        const projects = loadProjects();
+        const grid = document.getElementById("works-grid");
+        grid.innerHTML = projects
+          .map((p, i) => {
+            const wide =
+              projects.length % 2 === 1 && i === projects.length - 1
+                ? " md:col-span-2"
+                : "";
+            return `
+        <a href="https://youtu.be/${escapeHtml(
+          p.videoId
+        )}" target="_blank" rel="noopener" class="work-card group bg-bg aspect-video${wide}">
+          <div class="work-poster absolute inset-0"><img src="https://i.ytimg.com/vi/${escapeHtml(
+            p.videoId
+          )}/hqdefault.jpg" alt="${escapeHtml(
+              p.title
+            )} thumbnail" loading="lazy"></div>
+          <div class="absolute inset-0 flex flex-col justify-end p-6 md:p-8 bg-gradient-to-t from-black/70 via-black/10 to-transparent">
+            <div class="work-meta">
+              <p class="text-xs text-amber mb-1">${escapeHtml(
+                p.category || "Music Video"
+              )}</p>
+              <h3 class="font-display text-xl md:text-2xl text-ink">${escapeHtml(
+                p.title
+              )}</h3>
+            </div>
+          </div>
+        </a>`;
+          })
+          .join("");
+      }
+
+      renderGrid();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Admin — Slim Allouche</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { bg:'#100D0B', panel:'#1B1712', ink:'#F2ECE1', dim:'#B9AE9C', amber:'#E2A54B', teal:'#3F5C56', line:'rgba(242,236,225,0.12)' },
+        fontFamily: { display: ['Fraunces','ui-serif','Georgia','serif'], sans: ['Inter','system-ui','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  :root { box-sizing: border-box; padding-top: env(safe-area-inset-top,0px); padding-bottom: env(safe-area-inset-bottom,0px); }
+  body { background:#100D0B; color:#F2ECE1; }
+  input, select { background: transparent; }
+  input:focus, select:focus, textarea:focus { outline: 1px solid #E2A54B; outline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 1px solid #E2A54B; outline-offset: 3px; }
+</style>
+</head>
+<body class="font-sans antialiased min-h-screen">
+
+  
+  <div id="gate" class="min-h-screen flex items-center justify-center px-6">
+    <form id="gate-form" class="w-full max-w-xs">
+      <h1 class="font-display italic text-2xl text-ink mb-6 text-center">Admin</h1>
+      <label for="gate-pass" class="block text-xs text-dim mb-2">Passcode</label>
+      <input id="gate-pass" type="password" autocomplete="off"
+             class="w-full border-b border-line focus:border-amber py-2 text-ink mb-4" />
+      <p id="gate-error" class="text-xs text-amber mb-4 hidden">Wrong passcode.</p>
+      <button type="submit" class="w-full border border-line rounded-full py-3 text-sm hover:border-amber hover:text-amber transition-colors">Enter</button>
+    </form>
+  </div>
+
+  <!-- Page mte3 el admin -->
+  <div id="panel" class="hidden max-w-[900px] mx-auto px-6 md:px-10 py-16 md:py-20">
+    <div class="flex items-center justify-between mb-10">
+      <h1 class="font-display italic text-3xl md:text-4xl text-ink">Manage projects</h1>
+      <a href="index.html" class="text-sm text-dim hover:text-ink transition-colors">View site</a>
+    </div>
+
+    <p class="text-dim text-sm leading-relaxed mb-10 max-w-2xl border border-line rounded-lg p-4">
+      Changes save to this browser and show up on the portfolio immediately when you view it
+      <span class="text-ink">on this same device</span>. To make a change visible to every visitor
+      everywhere, use <span class="text-ink">Export code</span> below and paste it into
+      <code class="text-amber">index.html</code>, then redeploy the site.
+    </p>
+
+    
+    <form id="project-form" class="grid md:grid-cols-2 gap-6 mb-12 border-b border-line pb-12">
+      <input type="hidden" id="edit-index" value="">
+      <div class="md:col-span-2">
+        <label for="p-title" class="block text-xs text-dim mb-2">Project title</label>
+        <input id="p-title" required type="text" placeholder="Artist — Song title"
+               class="w-full border-b border-line focus:border-amber py-2 text-ink placeholder:text-dim/50" />
+      </div>
+      <div>
+        <label for="p-category" class="block text-xs text-dim mb-2">Category</label>
+        <select id="p-category" class="w-full border-b border-line focus:border-amber py-2 text-ink">
+          <option>Music Video</option>
+          <option>Narrative</option>
+          <option>Commercial</option>
+          <option>Documentary</option>
+        </select>
+      </div>
+      <div>
+        <label for="p-url" class="block text-xs text-dim mb-2">YouTube URL</label>
+        <input id="p-url" required type="text" placeholder="https://youtu.be/…"
+               class="w-full border-b border-line focus:border-amber py-2 text-ink placeholder:text-dim/50" />
+      </div>
+      <div class="md:col-span-2 flex items-center gap-4">
+        <div id="p-preview" class="hidden w-28 aspect-video bg-panel rounded overflow-hidden">
+          <img id="p-preview-img" class="w-full h-full object-cover" alt="Thumbnail preview" />
+        </div>
+        <div class="flex items-center gap-3 ml-auto">
+          <button type="button" id="cancel-edit" class="hidden text-sm text-dim hover:text-ink transition-colors">Cancel</button>
+          <button type="submit" id="submit-btn" class="text-sm border border-line rounded-full px-6 py-3 hover:border-amber hover:text-amber transition-colors">Add project</button>
+        </div>
+      </div>
+      <p id="form-error" class="md:col-span-2 text-xs text-amber hidden"></p>
+    </form>
+
+    
+    <div id="project-list" class="space-y-px bg-line mb-10"></div>
+
+    
+    <div class="border-t border-line pt-8 flex flex-wrap items-center gap-4">
+      <button id="export-btn" class="text-sm border border-line rounded-full px-6 py-3 hover:border-amber hover:text-amber transition-colors">Export code</button>
+      <button id="reset-btn" class="text-sm text-dim hover:text-ink transition-colors">Reset to defaults</button>
+      <p id="export-status" class="text-sm text-dim" role="status" aria-live="polite"></p>
+    </div>
+    <pre id="export-output" class="hidden mt-6 p-4 bg-panel rounded-lg text-xs text-dim overflow-x-auto"></pre>
+  </div>
+
+  <script>
+    const PASSCODE = 'reel2026'; // Mot de Passe
+    const PROJECTS_KEY = 'slim_projects';
+
+    const DEFAULT_PROJECTS = [
+      { title: 'Ramsjamsss — COUCH (w/ Von Moon)', category: 'Music Video', videoId: 'SENZBz9aIIw' },
+      { title: 'Cosmooo x Ramsjamsss — Pull Up',   category: 'Music Video', videoId: 'VeY0PRd_yjw' },
+      { title: 'Ramsjamsss — Dont Care',            category: 'Music Video', videoId: 'yzBXleyhFPo' },
+      { title: 'Ramsjamsss — idowhatiwant',         category: 'Music Video', videoId: '2J6N1qr7fSU' },
+      { title: 'Ramsjamsss — Twinkie (w/ LGX.)',    category: 'Music Video', videoId: '-jiQ6s9_Q1U' },
+      { title: 'Ramsjamsss — Do Not Disturb',       category: 'Music Video', videoId: 'x7XsUbkCNKs' },
+      { title: 'Ramsjamsss — REDEFINED',            category: 'Music Video', videoId: '15d37MkvAdU' }
+    ];
+
+    function loadProjects() {
+      try {
+        const raw = localStorage.getItem(PROJECTS_KEY);
+        if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed)) return parsed; }
+      } catch (e) {}
+      return DEFAULT_PROJECTS.slice();
+    }
+    function saveProjects(list) {
+      localStorage.setItem(PROJECTS_KEY, JSON.stringify(list));
+    }
+    function extractVideoId(url) {
+      const patterns = [/youtu\.be\/([^?&]+)/, /v=([^?&]+)/, /embed\/([^?&]+)/];
+      for (const re of patterns) { const m = url.match(re); if (m) return m[1]; }
+      return url.trim().length <= 15 ? url.trim() : null; // allow a raw ID
+    }
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    // --- Gate ---
+    const gate = document.getElementById('gate');
+    const panel = document.getElementById('panel');
+    document.getElementById('gate-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const val = document.getElementById('gate-pass').value;
+      if (val === PASSCODE) {
+        sessionStorage.setItem('slim_admin_ok', '1');
+        gate.classList.add('hidden');
+        panel.classList.remove('hidden');
+        renderList();
+      } else {
+        document.getElementById('gate-error').classList.remove('hidden');
+      }
+    });
+    if (sessionStorage.getItem('slim_admin_ok') === '1') {
+      gate.classList.add('hidden');
+      panel.classList.remove('hidden');
+    }
+
+  
+    const urlInput = document.getElementById('p-url');
+    const preview = document.getElementById('p-preview');
+    const previewImg = document.getElementById('p-preview-img');
+    urlInput.addEventListener('input', () => {
+      const id = extractVideoId(urlInput.value);
+      if (id) { previewImg.src = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`; preview.classList.remove('hidden'); }
+      else { preview.classList.add('hidden'); }
+    });
+
+
+    const form = document.getElementById('project-form');
+    const editIndex = document.getElementById('edit-index');
+    const submitBtn = document.getElementById('submit-btn');
+    const cancelBtn = document.getElementById('cancel-edit');
+    const formError = document.getElementById('form-error');
+
+    function resetForm() {
+      form.reset();
+      editIndex.value = '';
+      submitBtn.textContent = 'Add project';
+      cancelBtn.classList.add('hidden');
+      preview.classList.add('hidden');
+      formError.classList.add('hidden');
+    }
+    cancelBtn.addEventListener('click', resetForm);
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const title = document.getElementById('p-title').value.trim();
+      const category = document.getElementById('p-category').value;
+      const videoId = extractVideoId(document.getElementById('p-url').value.trim());
+      if (!title || !videoId) {
+        formError.textContent = "Couldn't read a video ID from that URL — paste the full YouTube link.";
+        formError.classList.remove('hidden');
+        return;
+      }
+      const projects = loadProjects();
+      const entry = { title, category, videoId };
+      if (editIndex.value !== '') projects[Number(editIndex.value)] = entry;
+      else projects.push(entry);
+      saveProjects(projects);
+      resetForm();
+      renderList();
+    });
+
+
+    function renderList() {
+      const projects = loadProjects();
+      const list = document.getElementById('project-list');
+      if (!projects.length) {
+        list.innerHTML = `<p class="text-dim text-sm py-6">No projects yet — add one above.</p>`;
+        return;
+      }
+      list.innerHTML = projects.map((p, i) => `
+        <div class="bg-bg flex items-center gap-4 p-3">
+          <img src="https://i.ytimg.com/vi/${escapeHtml(p.videoId)}/hqdefault.jpg" class="w-20 aspect-video object-cover rounded" loading="lazy" alt="" />
+          <div class="flex-1 min-w-0">
+            <p class="text-ink text-sm truncate">${escapeHtml(p.title)}</p>
+            <p class="text-dim text-xs">${escapeHtml(p.category || 'Music Video')}</p>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <button data-move="up" data-i="${i}" class="text-dim hover:text-ink px-2 py-1">↑</button>
+            <button data-move="down" data-i="${i}" class="text-dim hover:text-ink px-2 py-1">↓</button>
+            <button data-edit="${i}" class="text-dim hover:text-amber px-2 py-1">Edit</button>
+            <button data-delete="${i}" class="text-dim hover:text-amber px-2 py-1">Delete</button>
+          </div>
+        </div>`).join('');
+    }
+
+    document.getElementById('project-list').addEventListener('click', e => {
+      const target = e.target;
+      const projects = loadProjects();
+      if (target.dataset.edit !== undefined) {
+        const p = projects[Number(target.dataset.edit)];
+        document.getElementById('p-title').value = p.title;
+        document.getElementById('p-category').value = p.category || 'Music Video';
+        document.getElementById('p-url').value = `https://youtu.be/${p.videoId}`;
+        urlInput.dispatchEvent(new Event('input'));
+        editIndex.value = target.dataset.edit;
+        submitBtn.textContent = 'Save changes';
+        cancelBtn.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (target.dataset.delete !== undefined) {
+        const i = Number(target.dataset.delete);
+        if (confirm(`Remove "${projects[i].title}"?`)) {
+          projects.splice(i, 1);
+          saveProjects(projects);
+          renderList();
+        }
+      } else if (target.dataset.move) {
+        const i = Number(target.dataset.i);
+        const j = target.dataset.move === 'up' ? i - 1 : i + 1;
+        if (j < 0 || j >= projects.length) return;
+        [projects[i], projects[j]] = [projects[j], projects[i]];
+        saveProjects(projects);
+        renderList();
+      }
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      if (confirm('Reset to the 7 default projects? This clears anything you added here.')) {
+        localStorage.removeItem(PROJECTS_KEY);
+        renderList();
+      }
+    });
+
+
+    document.getElementById('export-btn').addEventListener('click', () => {
+      const projects = loadProjects();
+      const code = 'const DEFAULT_PROJECTS = ' + JSON.stringify(projects, null, 2) + ';';
+      const out = document.getElementById('export-output');
+      out.textContent = code;
+      out.classList.remove('hidden');
+      const status = document.getElementById('export-status');
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(code).then(() => {
+          status.textContent = 'Copied — paste this over the DEFAULT_PROJECTS array in index.html, then redeploy.';
+        }).catch(() => { status.textContent = 'Copy the code below and paste it into index.html.'; });
+      } else {
+        status.textContent = 'Copy the code below and paste it into index.html.';
+      }
+    });
+
+    renderList();
+  </script>
+</body>
+</html>
